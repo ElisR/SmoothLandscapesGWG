@@ -73,12 +73,24 @@ BA: 0.5                          BA: 0.5                          BA: 0.4
                                  BB: 0.1                          BB: 0.2
 ```
 
+They then train a fitness model $f\_{\theta}$ on these smoothed fitness labels $\hat{Y}$.
+
 [^1]: A graph Laplacian for an undirected graph is a symmetric matrix $L = D - A$, where $D$ is the degree matrix counting each node's edges, and $A$ is the adjacency matrix. This has uses in _spectral clustering_ of graphs.
 
 ## 🧬 Clustered Sampling
 
+Now that we have a model for estimating fitness, one can in principle pass this to any discrete sampler.
+In the paper, they focus on a particular discrete sampler called "Gibbs with Gradient", whose details we will leave until the next section.
 
+Nevertheless, most discrete samplers can be abstracted into a process that, in every round, gets given a set of sequences and produces another set of mutated sequences.
+These mutated sequences then get added so the next round.
+This procedure can lead to an intractable number of sequences to consider since each sequence can be mutated in multiple ways.
 
+To limit computational cost, the authors therefore perform hierarchical clustering on all the sequences from a round, and pick the sequence from each cluster that has the highest predicted fitness according to $f\_{\theta}$.
+
+<!-- TODO Finish describing the clustering. -->
+
+A reasonable initial round can be the sequences $X$ used to train the model.
 
 ## ↗️ Gibbs with Gradient (GWG)
 
@@ -92,9 +104,10 @@ Since GWG makes direct use of the gradient, there is reason to expect that smoot
 
 > [!NOTE]
 > 
-> Elis: Should make a comment about GWG trying to sample from a distribution, whereas the optimiser is trying to find diverse optima. 
+> Elis: Should make a comment about GWG trying to sample from a distribution, whereas the optimiser is trying to find diverse optima.
 
-## 🧪 Experiments
+
+## 🧪 Benchmark
 
 They test graph-based smoothing with other protein optimisers, in addition to their GWG-based optimiser.
 
