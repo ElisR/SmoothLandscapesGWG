@@ -23,7 +23,7 @@ This makes protein optimisation using machine learning methods susceptible to ge
 
 ## 🟰 Problem Formulation
 
-On more formal footing, one has a starting set of $N$ proteins $\mathcal{D} = (X, Y)$ where $X = \{ x^1, \ldots, x^N \} \subset \mathcal{V}^M$ are sequences and $Y = \{ y^1, \ldots, y^N \}$ are their scalar fitness labels.
+On more formal footing, one has a starting set of $N$ proteins $\mathcal{D} = (X, Y)$ where $X = \{ x\_1, \ldots, x\_N \} \subset \mathcal{V}^M$ are sequences and $Y = \{ y\_1, \ldots, y\_N \}$ are their scalar fitness labels.
 $\mathcal{V}$ is the vocabulary of amino acids, which is 20.
 The aim is to generate sequences with higher fitness than the starting set.
 
@@ -37,7 +37,7 @@ Hence, one trains an evaluator model $g\_{\phi}$ to minimise the error on $\math
 The starting dataset $\mathcal{D}$ we mentioned above is a strict subset $\mathcal{D} \subset \mathcal{D}^{\*}$, so that the evaluator model has access to more data than whatever model or optimiser is under investigation.
 This situation mimics the setting of real life protein optimisation, just with the real oracle function $g$ replaced by the best in-silico approximation we can make: a machine learning model $g^{\*}$ trained on more data.
 
-## 💆 Graph-Based Smoothing
+## 💆📉 Graph-Based Smoothing and Training
 
 The philosophy of this paper is to optimise over a _smoothed_ fitness landscape, even if the true fitness landscape is indeed non-smooth.
 They do this with a graph-based method borrowed from graph signal processing.
@@ -47,7 +47,7 @@ They then augment the dataset by using $f\_{\tilde{\theta}}$ to infer the fitnes
 
 ```
 AA: 0.8                          AA: 0.8
-AB: 0.3  --- neural network -->  AB: 0.3
+AB: 0.3  ----- trained NN ---->  AB: 0.3
 BA: 0.5                          BA: 0.5
                                  BB: 0.1
 ```
@@ -57,22 +57,34 @@ They then define the smoothness of the fitness graph as the sum of squares of lo
 
 $$\mathbf{TV}\_{2}(Y) = \frac{1}{2} \sum\_{i \in V} \sum\_{(i, j) \in E} (y\_i - y\_j)^2$$
 
-This is used as a regulariser for defining smoothed fitness labels $\hat{Y}$.
+This is used as a regulariser for defining smoothed fitness labels $\hat{Y}$:
 
-### 🧠 Aside: Gibbs Sampling
+$$\underset{\hat{Y} \in \mathbb{R}^{|V|}}{\mathrm{arg min}} \| Y - \hat{Y} \|^2\_2 + \gamma \mathbf{TV}\_{2}(\hat{Y}).$$
 
+(This is a quadratic convex problem which has a closed form solution $\hat{Y} = (1 + \gamma L)^{-1} Y$ in terms of the graph Laplacian.[^1])
 
+$\gamma$ is a hyperparameter that sets the amount of smoothing: setting it too high can lead to underfitting, whereas setting it too low negates the purpose of smoothing in the first place.
+A disadvantage of this approach is that there is no principled way of choosing $\gamma$, and the authors proceeded with a trial-and-error approach for this hyperparameter. 
 
-## 📉 Training Procedure
+```
+AA: 0.8                          AA: 0.8                          AA: 0.6
+AB: 0.3  ----- trained NN ---->  AB: 0.3  ------- smooth ------>  AB: 0.4  ----- retrain NN ---->  
+BA: 0.5                          BA: 0.5                          BA: 0.4
+                                 BB: 0.1                          BB: 0.2
+```
 
+[^1]: A graph Laplacian for an undirected graph is a symmetric matrix $L = D - A$, where $D$ is the degree matrix counting each node's edges, and $A$ is the adjacency matrix. This has uses in _spectral clustering_ of graphs.
 
-## 🧬 Sampling Procedure
+## 🧬 Clustered Sampling
+
 
 
 
 ## ↗️ Gibbs with Gradient (GWG)
 
 Since GWG makes direct use of the gradient, there is reason to expect that smoothing the landscape (and hence gradients) will improve a GWG-based optimiser. 
+
+### 🧠 Aside: Gibbs Sampling
 
 > [!WARNING]
 >
