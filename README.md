@@ -46,10 +46,10 @@ Firstly, they train a noisy fitness model $f\_{\tilde{\theta}}$ on the initial d
 They then augment the dataset by using $f\_{\tilde{\theta}}$ to infer the fitness of neighbouring sequences, which are sequences from $X$ with random point mutations.
 
 ```
-AA: 0.8                          AA: 0.8
-AB: 0.3  ----- trained NN ---->  AB: 0.3
-BA: 0.5                          BA: 0.5
-                                 BB: 0.1
+AA: 0.8                      AA: 0.8
+AB: 0.3  --- trained NN -->  AB: 0.3
+BA: 0.5                      BA: 0.5
+                             BB: 0.1
 ```
 
 The augmented sequences then become nodes $V$ on a graph, where edges $E$ are constructed as a $k$-nearest neighbour graph based on Levenshtein distance.
@@ -67,10 +67,10 @@ $\gamma$ is a hyperparameter that sets the amount of smoothing: setting it too h
 A disadvantage of this approach is that there is no principled way of choosing $\gamma$, and the authors proceeded with a trial-and-error approach for this hyperparameter. 
 
 ```
-AA: 0.8                          AA: 0.8                          AA: 0.6
-AB: 0.3  ----- trained NN ---->  AB: 0.3  ------- smooth ------>  AB: 0.4  ----- retrain NN ---->  
-BA: 0.5                          BA: 0.5                          BA: 0.4
-                                 BB: 0.1                          BB: 0.2
+AA: 0.8                      AA: 0.8                      AA: 0.6
+AB: 0.3  --- trained NN -->  AB: 0.3  ----- smooth ---->  AB: 0.4  --- retrain NN -->
+BA: 0.5                      BA: 0.5                      BA: 0.4
+                             BB: 0.1                      BB: 0.2
 ```
 
 They then train a fitness model $f\_{\theta}$ on these smoothed fitness labels $\hat{Y}$.
@@ -133,19 +133,25 @@ The main success metric is _fitness_, which is the median fitness amongst the fi
 In addition, they also quote two other metrics that are not equivalent to better performance, namely _diversity_ and _novelty_.
 Diversity is defined as the median pairwise Levenshtein distance in $\hat{X}$, wherease novelty is the median minimal distance to the starting set $X$. 
 
-## ↗️ Gibbs with Gradient (GWG)
+## ↗️ Gibbs with Gradient (GWG) [Grathwohl et al.](https://arxiv.org/abs/2102.04509)
 
 Since GWG makes direct use of the gradient, there is reason to expect that smoothing the landscape (and hence gradients) will improve a GWG-based optimiser. 
+Let us now summarise the key features of this sampler.
+
+The fitness model $f\_{\theta}$ can be viewed as an energy based model defining a Boltzmann distribution $\log{p(x)} = f\_{\theta} - \log{Z}$ with normalisation constant $Z$.
+Fit sequences are more likely under this distribution, but there is still diversity amongst functional sequences.
+
+> [!NOTE]
+>
+> Let's pause to highlight the different objectives of the original GWG paper and how it is used here.
+> GWG aims to fairly sample from the distribution $p(x)$ as few costly function evaluations as possible.
+> On the other hand, this paper's "directed evolution" procedure of culling unfit sequences after every round targets only the fittest sequences while trying to maintain diversity by applying an arbitrary clustering heuristic.
 
 ### 🧠 Aside: Gibbs Sampling
 
 > [!WARNING]
 >
 > The following goes into the mathematics of GWG.
-
-> [!NOTE]
-> 
-> Elis: Should make a comment about GWG trying to sample from a distribution, whereas the optimiser is trying to find diverse optima.
 
 ## 🥡 Takeaways
 
