@@ -96,6 +96,42 @@ Each round $r$ culls sequences from the previous round and performs some samplin
 $$\tilde{X}\_r = \mathrm{Reduce}(X\_r; \theta), \qquad X\_{r + 1} = \mathrm{Sample}(\tilde{X}\_r; \theta).$$
 
 A reasonable initial round can be the sequences $X$ used to train the model.
+After $R$ rounds, the top $K$ sequences are kept.
+
+## 🧪 Benchmark
+
+They reuse two well-studied proteins for their protein optimisation because of the relative abundance of data: Green Fluorescent Protein (GFP) and Adeno-Associated Virus (AAV).
+Both datasets have around ~50k variants each, with variants up to 15 mutations away from the wiltype.
+GFP fitness is its fluorescence, whereas AAV's is the ability to package a DNA payload, apparently.
+
+One measure of the difficulty of a protein optimisation benchmark is the "mutational gap", which is the number of mutations away from the starting set required to achieve the highest known fitness.
+(In practice, the gap is taken to a set of sequences belonging to 99th fitness percentile, since the true optimum is unknown.)
+A second difficulty measure is the fitness range in the starting set of sequences, since a small range of fitness reuiqres the method to learn from barely functional proteins.
+They take care to define these notions of "difficulty", because they want to highlight that the deficiencies of previous methods only become apparent at the harder difficulties, and that previous literature used an easier benchmark with more data leakage.
+(Their "medium" and "hard" difficulties have gaps of 6 and 7, respectively, with percentile ranges of 20-40 and <30, respectively.)
+
+## 📊 Results
+
+They test the effects of graph-based smoothing against against a variety of baseline protein optimisers, which I very briefly summarise below:
+
+- GFlowNets ([GFN-AL](https://arxiv.org/abs/2203.04115)): an approach somewhat reminiscent of reinforcement learning, where proteins are sampled with probability proportional to the reward function.
+- Model-based adaptive sampling (CbAs):
+- Greedy search (AdaLead):
+- Bayesian optimisation (BO-qei): 
+- Conservative model-based optimisation (CoMs): 
+- Proximal exploration (PEX): 
+
+The following approach to protein optimisation was not benchmarked because the framework was too tied to antibody optimisation (rather than generic proteins):
+
+- Guided discrete diffusion (NOS):
+
+Their model architecture for $f\_{\theta}$ was a 1D CNN.
+Each method generates a set $\hat{X}$ of 128 sequences.
+
+The main success metric is _fitness_, which is the median fitness amongst the final sequences, as judged by the (imperfect!) evaluator $g\_{\theta}$.
+(They normalise this based on the lowest and highest known fitness in $Y^\*$.)
+In addition, they also quote two other metrics that are not equivalent to better performance, namely _diversity_ and _novelty_.
+Diversity is defined as the median pairwise Levenshtein distance in $\hat{X}$, wherease novelty is the median minimal distance to the starting set $X$. 
 
 ## ↗️ Gibbs with Gradient (GWG)
 
@@ -111,28 +147,9 @@ Since GWG makes direct use of the gradient, there is reason to expect that smoot
 > 
 > Elis: Should make a comment about GWG trying to sample from a distribution, whereas the optimiser is trying to find diverse optima.
 
-
-## 🧪 Benchmark
-
-They test graph-based smoothing with other protein optimisers, in addition to their GWG-based optimiser.
-
-
-## 📊 Results
-
-They compare their results against a variety of baselines, which I very briefly summarise below:
-
-- GFlowNets (GFN-AL): an approach somewhat reminiscent of reinforcement learning, where proteins are sampled with probability proportional to the reward function.
-- Model-based adaptive sampling (CbAs):
-- Greedy search (AdaLead):
-- Bayesian optimisation (BO-qei): 
-- Conservative model-based optimisation (CoMs): 
-- Proximal exploration (PEX): 
-
-The following approach to protein optimisation was not benchmarked because the framework was too tied to antibody optimisation (rather than generic proteins):
-
-- Guided discrete diffusion (NOS):
-
 ## 🥡 Takeaways
 
-
-- Optimising over a smoothed fitness landscape gives better results. 
+- Optimising over a smoothed fitness landscape can give better results. 
+- There is no principled way to decide on how much smoothing to apply, and it probably varies from dataset to dataset.
+- Previous GFP and AAV protein optimsiation benchmarks have been easier than the harder benchmark in this paper.
+- Their Gibbs with Gradient sampler benefitted the most from a smoother fitness landscape.
