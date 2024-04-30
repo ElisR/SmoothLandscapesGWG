@@ -28,15 +28,15 @@ $\mathcal{V}$ is the vocabulary of amino acids, which is 20.
 The aim is to generate sequences with higher fitness than the starting set.
 
 Evaluating a protein optimiser is difficult, because if an optimiser proposes a sequence, the only way to access the true fitness is to perform a biological experiment.
-Hence, prior work in this field perform in-silico evalution with an approximation $g^\phi$ to the true fitness black-box function $g: \mathcal{V}^M \to \mathbb{R}$ satisfying $g(x^*) = y^*$.
-That is, they consider the starting dataset $\mathcal{D}$ to be a strict subset $\mathcal{D} \subset \mathcal{D}^*$ of a larger known dataset $\mathcal{D}^* = (X^*, Y^*)$.
+Hence, prior work in this field perform in-silico evalution with an approximation $g^\phi$ to the true fitness black-box function $g: \mathcal{V}^M \to \mathbb{R}$ satisfying $g(x^{\*}) = y^{{\*}}$.
+That is, they consider the starting dataset $\mathcal{D}$ to be a strict subset $\mathcal{D} \subset \mathcal{D}^{\*}$ of a larger known dataset $\mathcal{D}^{\*} = (X^{\*}, Y^{\*})$.
 
 ## 💆 Graph-Based Smoothing
 
 The philosophy of this paper is to optimise over a _smoothed_ fitness landscape, even if the true fitness landscape is indeed non-smooth.
 They do this with a graph-based method borrowed from graph signal processing.
 
-
+### 🧠 Aside: Gibbs Sampling
 
 ## 📉 Training Procedure
 
