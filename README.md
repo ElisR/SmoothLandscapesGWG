@@ -104,10 +104,10 @@ They reuse two well-studied proteins for their protein optimisation because of t
 Both datasets have around ~50k variants each, with variants up to 15 mutations away from the wiltype.
 GFP fitness is its fluorescence, whereas AAV's is the ability to package a DNA payload, apparently.
 
+The authors take care to define the "difficulty" of a protein optimisation task, because they want to highlight that the deficiencies of previous methods only become apparent at the harder difficulties, and that previous literature used an easier benchmark with more data leakage.
 One measure of the difficulty of a protein optimisation benchmark is the "mutational gap", which is the number of mutations away from the starting set required to achieve the highest known fitness.
 (In practice, the gap is taken to a set of sequences belonging to 99th fitness percentile, since the true optimum is unknown.)
-A second difficulty measure is the fitness range in the starting set of sequences, since a small range of fitness reuiqres the method to learn from barely functional proteins.
-They take care to define these notions of "difficulty", because they want to highlight that the deficiencies of previous methods only become apparent at the harder difficulties, and that previous literature used an easier benchmark with more data leakage.
+A second difficulty measure is the fitness range in the starting set of sequences, since a small range of fitness requires the method to learn from barely functional proteins.
 (Their "medium" and "hard" difficulties have gaps of 6 and 7, respectively, with percentile ranges of 20-40 and <30, respectively.)
 
 ## 📊 Results
@@ -133,7 +133,7 @@ The main success metric is _fitness_, which is the median fitness amongst the fi
 In addition, they also quote two other metrics that are not equivalent to better performance, namely _diversity_ and _novelty_.
 Diversity is defined as the median pairwise Levenshtein distance in $\hat{X}$, wherease novelty is the median minimal distance to the starting set $X$. 
 
-## ↗️ Gibbs with Gradient (GWG) [Grathwohl et al.](https://arxiv.org/abs/2102.04509)
+## ↗️ Gibbs with Gradient (GWG) [Grathwohl et al. 2021](https://arxiv.org/abs/2102.04509)
 
 Since GWG makes direct use of the gradient, there is reason to expect that smoothing the landscape (and hence gradients) will improve a GWG-based optimiser. 
 Let us now summarise the key features of this sampler.
@@ -155,7 +155,7 @@ Fit sequences are more likely under this distribution, but there is still divers
 
 ## 🥡 Takeaways
 
-- Optimising over a smoothed fitness landscape can give better results. 
+- Optimising over a **smoothed** fitness landscape can give better results. 
 - There is no principled way to decide on how much smoothing to apply, and it probably varies from dataset to dataset.
-- Previous GFP and AAV protein optimsiation benchmarks have been easier than the harder benchmark in this paper.
-- Their Gibbs with Gradient sampler benefitted the most from a smoother fitness landscape.
+- **Previous** GFP and AAV protein optimsiation **benchmarks** have been **easier** than the harder benchmark in this paper.
+- Their **Gibbs with Gradient** sampler **benefitted** the most from a **smoother** fitness landscape.
