@@ -27,16 +27,41 @@ On more formal footing, one has a starting set of $N$ proteins $\mathcal{D} = (X
 $\mathcal{V}$ is the vocabulary of amino acids, which is 20.
 The aim is to generate sequences with higher fitness than the starting set.
 
-Evaluating a protein optimiser is difficult, because if an optimiser proposes a sequence, the only way to access the true fitness is to perform a biological experiment.
-Hence, prior work in this field perform in-silico evalution with an approximation $g^\phi$ to the true fitness black-box function $g: \mathcal{V}^M \to \mathbb{R}$ satisfying $g(x^{\*}) = y^{{\*}}$.
-That is, they consider the starting dataset $\mathcal{D}$ to be a strict subset $\mathcal{D} \subset \mathcal{D}^{\*}$ of a larger known dataset $\mathcal{D}^{\*} = (X^{\*}, Y^{\*})$.
+Evaluating a protein optimiser is difficult, because if an optimiser proposes a sequence, the only way to access its true fitness is to perform a biological experiment.
+Hence, prior works use an in-silico approximation for evaluation.
+
+Suppose that all known sequence and fitness measurements are contained in $\mathcal{D}^{\*} = (X^{\*}, Y^{\*})$.
+One assumes the existence of black-box fitness function $g: \mathcal{V}^M \to \mathbb{R}$ satisfying $g(x^{\*}) = y^{{\*}}$.
+
+Hence, one trains an evaluator model $g\_{\phi}$ to minimise the error on $\mathcal{D}^{\*}$, which one can use to score any sequence that an optimiser gives us (even outside the domain of $\mathcal{D}^{\*}$).
+The starting dataset $\mathcal{D}$ we mentioned above is a strict subset $\mathcal{D} \subset \mathcal{D}^{\*}$, so that the evaluator model has access to more data than whatever model or optimiser is under investigation.
+This situation mimics the setting of real life protein optimisation, just with the real oracle function $g$ replaced by the best in-silico approximation we can make: a machine learning model $g^{\*}$ trained on more data.
 
 ## 💆 Graph-Based Smoothing
 
 The philosophy of this paper is to optimise over a _smoothed_ fitness landscape, even if the true fitness landscape is indeed non-smooth.
 They do this with a graph-based method borrowed from graph signal processing.
 
+Firstly, they train a noisy fitness model $f\_{\tilde{\theta}}$ on the initial dataset $\mathcal{D}$.
+They then augment the dataset by using $f\_{\tilde{\theta}}$ to infer the fitness of neighbouring sequences, which are sequences from $X$ with random point mutations.
+
+```
+AA: 0.8                          AA: 0.8
+AB: 0.3  --- neural network -->  AB: 0.3
+BA: 0.5                          BA: 0.5
+                                 BB: 0.1
+```
+
+The augmented sequences then become nodes $V$ on a graph, where edges $E$ are constructed as a $k$-nearest neighbour graph based on Levenshtein distance.
+They then define the smoothness of the fitness graph as the sum of squares of local variability:
+
+$$\mathbf{TV}\_{2}(Y) = \frac{1}{2} \sum\_{i \in V} \sum\_{(i, j) \in E} (y\_i - y\_j)^2$$
+
+This is used as a regulariser for defining smoothed fitness labels $\hat{Y}$.
+
 ### 🧠 Aside: Gibbs Sampling
+
+
 
 ## 📉 Training Procedure
 
