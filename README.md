@@ -87,8 +87,13 @@ These mutated sequences then get added so the next round.
 This procedure can lead to an intractable number of sequences to consider since each sequence can be mutated in multiple ways.
 
 To limit computational cost, the authors therefore perform hierarchical clustering on all the sequences from a round, and pick the sequence from each cluster that has the highest predicted fitness according to $f\_{\theta}$.
+In their notation, they denote this procedure by $\mathrm{Reduce}$, where $\mathcal{C}$ is the number of clusters, so that $\mathrm{Cluster}(X; \mathcal{C}) = \{ X^c \}\_{c=1}^{\mathcal{C}}$ and
 
-<!-- TODO Finish describing the clustering. -->
+$$\mathrm{Reduce}(X; \theta) = \bigcup\_{c=1}^{\mathcal{C}} \{ \underset{x \in X^c}{\mathrm{arg max}} f\_{\theta}(x) \}$$
+
+Each round $r$ culls sequences from the previous round and performs some sampling:
+
+$$\tilde{X}\_r = \mathrm{Reduce}(X\_r; \theta), \qquad X\_{r + 1} = \mathrm{Sample}(\tilde{X}\_r; \theta).$$
 
 A reasonable initial round can be the sequences $X$ used to train the model.
 
@@ -113,6 +118,19 @@ They test graph-based smoothing with other protein optimisers, in addition to th
 
 
 ## 📊 Results
+
+They compare their results against a variety of baselines, which I very briefly summarise below:
+
+- GFlowNets (GFN-AL): an approach somewhat reminiscent of reinforcement learning, where proteins are sampled with probability proportional to the reward function.
+- Model-based adaptive sampling (CbAs):
+- Greedy search (AdaLead):
+- Bayesian optimisation (BO-qei): 
+- Conservative model-based optimisation (CoMs): 
+- Proximal exploration (PEX): 
+
+The following approach to protein optimisation was not benchmarked because the framework was too tied to antibody optimisation (rather than generic proteins):
+
+- Guided discrete diffusion (NOS):
 
 ## 🥡 Takeaways
 
