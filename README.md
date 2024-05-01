@@ -152,16 +152,25 @@ Their appendices test the effects of varying some hyperparameters, namely:
 Since GWG makes direct use of the gradient, there is reason to expect that smoothing the landscape (and hence gradients) will improve a GWG-based optimiser. 
 Let us now summarise the key features of this sampler.
 
+> [!NOTE]
+>
+> Let's pause to highlight the different objectives of the original GWG sampler and this _Kirjner et al._ paper.
+> GWG aims to fairly sample from the distribution $p(x)$ as few costly function evaluations as possible.
+> On the other hand, this paper's "directed evolution" procedure of culling unfit sequences after every round targets only the fittest sequences.
+> Mathematically, _Kirjner et al._'s clustering heuristic is arbitrary and is there to maintain diversity in practice.
+
+
+### 🧠 Aside: Gibbs Sampling
+
 The fitness model $f\_{\theta}$ can be viewed as an energy based model defining a Boltzmann distribution $\log{p(x)} = f\_{\theta}(x) - \log{Z}$ with normalisation constant $Z$.
 Fit sequences are more likely under this distribution.
 
-> [!NOTE]
+> [!WARNING]
 >
-> Let's pause to highlight the different objectives of the original GWG sampler and how it is used here.
-> GWG aims to fairly sample from the distribution $p(x)$ as few costly function evaluations as possible.
-> On the other hand, this paper's "directed evolution" procedure of culling unfit sequences after every round targets only the fittest sequences while trying to maintain diversity by applying an arbitrary clustering heuristic.
+> This section is optional for understanding the features of this paper.
+> The following introduction to GWG is almost the worst of both worlds, in that it introduces some mathematical detail while also missing out on a lot.
 
-The problem with trying to sample from $p(x)$ is that we don't have the normalisation constant $Z$, only the relative fitness of sequences: $f\_{\theta}(x') - f\_{\theta}(x')$.
+The problem with trying to sample from $p(x)$ is that we don't have the normalisation constant $Z$, only the relative fitness of sequences: $f\_{\theta}(x') - f\_{\theta}(x)$.
 Metropolis-Hastings sampling (an example of Markov-chain Monte Carlo) is one way of overcoming this hurdle.
 With this kind of sampling, one starts with one sequence, then iteratively forms a chain of sequences through gradual mutation. 
 After enough time passes, the distribution of sequences in the chain follow the distribution $p(x)$, provided one uses a valid rule for when to mutate a sequence in the chain and when to leave it alone.
@@ -172,7 +181,16 @@ If there are $K$ possible categories, we can calculate this normalised probabili
 One can then iterate through the dimensions in some fixed ordering to ensure all dimensions eventually get changed.
 Notice that a particular dimension does not have to change after an iteration.
 Indeed, in certain problems certain dimensions will very rarely change: for example, consider the outer pixels in MNIST, or conserved regions in the SARS-CoV-2 spike protein.
-Proposing a dimension that does not change is wasted computation, which motivates being craftier with choosing how often to consider changing certain dimensions.
+Crucially: **Proposing a dimension that does not subsequently change is wasted computation.**
+This motivates being craftier with choosing how often to propose changing certain dimensions.
+
+The classic Metropolis-Hastings sampler follows the principle of proposing a sequence according to $q(x'|x)$, then using the (potentially expensive) energy $f\_{\theta}$ function to accept the proposed update with probability
+
+$$\mathrm{min}(e^{f\_{\theta}(x') - f\_{\theta}(x')} \frac{q(x|x')}{q(x'|x)}, 1).$$
+
+When writing the proposal distribution as $q(x'|x) = \sum\_i q(x' | x, i) q(i)$ where $q(i)$ is a distribution over indices $i \in \{ 1, \ldots, D \}$, the Metropolis-Hastings approach can lead to performance improvements when $q(i)$ is biased towards dimensions that are more likely to change.
+Going one step further, if we swapped the unconditional proposal $q(i)$ for an input dependent proposal $q(i | x)$, we could theoretically do even better.
+For example, in MNIST, the pixels most likely to change are at the edge of a digit, while in a protein some residues are likely to co-mutate when they are close in 3D space. 
 
 An excellent visualisation of the process is shown in Figure 1 of _Grathwohl et al._.
 
@@ -181,11 +199,9 @@ An excellent visualisation of the process is shown in Figure 1 of _Grathwohl et 
 The GWG paper contains a theorem stating that how close this sampler is to being optimally efficient is linked to how smooth the energy function is.
 This helps explain why spiky (and possibly inaccurate) gradients in the protein landscape without graph-based smoothing led to bad results.
 
-### 🧠 Aside: Gibbs Sampling
+### 🔙 Back to GWG
 
-> [!WARNING]
->
-> The following goes into the mathematics of GWG.
+Now that we know have a flavour for why picking dimensions most likely to change (i.e. positions most likely to mutate) makes sampling faster, let's see how GWG uses gradients to inform its proposals.
 
 ## 🥡 Takeaways
 
