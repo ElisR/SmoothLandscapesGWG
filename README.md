@@ -155,9 +155,9 @@ Let us now summarise the key features of this sampler.
 > [!NOTE]
 >
 > Let's pause to highlight the different objectives of the original GWG sampler and this _Kirjner et al._ paper.
-> GWG aims to fairly sample from the distribution $p(x)$ as few costly function evaluations as possible.
+> GWG aims to fairly sample from the distribution $p(x)$ with as few costly function evaluations as possible.
 > On the other hand, this paper's "directed evolution" procedure of culling unfit sequences after every round targets only the fittest sequences.
-> Mathematically, _Kirjner et al._'s clustering heuristic is arbitrary and is there to maintain diversity in practice.
+> Mathematically, _Kirjner et al._'s clustering heuristic is arbitrary and is only there to maintain some diversity in practice.
 
 
 ### 🧠 Aside: Gibbs Sampling
@@ -168,7 +168,6 @@ Fit sequences are more likely under this distribution.
 > [!WARNING]
 >
 > This section is optional for understanding the features of this paper.
-> The following introduction to GWG is almost the worst of both worlds, in that it introduces some mathematical detail while also missing out on a lot.
 
 The problem with trying to sample from $p(x)$ is that we don't have the normalisation constant $Z$, only the relative fitness of sequences: $f\_{\theta}(x') - f\_{\theta}(x)$.
 Metropolis-Hastings sampling (an example of Markov-chain Monte Carlo) is one way of overcoming this hurdle.
@@ -181,27 +180,35 @@ If there are $K$ possible categories, we can calculate this normalised probabili
 One can then iterate through the dimensions in some fixed ordering to ensure all dimensions eventually get changed.
 Notice that a particular dimension does not have to change after an iteration.
 Indeed, in certain problems certain dimensions will very rarely change: for example, consider the outer pixels in MNIST, or conserved regions in the SARS-CoV-2 spike protein.
-Crucially: **Proposing a dimension that does not subsequently change is wasted computation.**
-This motivates being craftier with choosing how often to propose changing certain dimensions.
+**Proposing a dimension that does not subsequently change is wasted computation.**
+This motivates being judicious in choosing how often to propose changing certain dimensions.
 
-The classic Metropolis-Hastings sampler follows the principle of proposing a sequence according to $q(x'|x)$, then using the (potentially expensive) energy $f\_{\theta}$ function to accept the proposed update with probability
+The classic Metropolis-Hastings sampler follows this principle of first proposing a sequence according to $q(x'|x)$, then using the (potentially expensive) energy $f\_{\theta}$ function to accept the proposed update with probability
 
-$$\mathrm{min}(e^{f\_{\theta}(x') - f\_{\theta}(x')} \frac{q(x|x')}{q(x'|x)}, 1).$$
+$$\mathrm{min}(e^{f\_{\theta}(x') - f\_{\theta}(x)} \frac{q(x|x')}{q(x'|x)}, 1).$$
 
 When writing the proposal distribution as $q(x'|x) = \sum\_i q(x' | x, i) q(i)$ where $q(i)$ is a distribution over indices $i \in \{ 1, \ldots, D \}$, the Metropolis-Hastings approach can lead to performance improvements when $q(i)$ is biased towards dimensions that are more likely to change.
 Going one step further, if we swapped the unconditional proposal $q(i)$ for an input dependent proposal $q(i | x)$, we could theoretically do even better.
-For example, in MNIST, the pixels most likely to change are at the edge of a digit, while in a protein some residues are likely to co-mutate when they are close in 3D space. 
+For example, in MNIST, the pixels most likely to change are at the edge of a digit, while in a protein, some residues are likely to co-mutate when they are close in 3D space. 
 
-An excellent visualisation of the process is shown in Figure 1 of _Grathwohl et al._.
+### 🔙 Back to GWG
+
+Now that we know have a flavour for why preferentially proposing dimensions most likely to change (i.e. positions most likely to mutate) makes sampling more efficient, let's see how GWG uses gradients to inform its proposals.
+
+An nice visualisation of the process is shown in Figure 1 of _Grathwohl et al._.
 
 <!-- Show Figure 1 -->
 
 The GWG paper contains a theorem stating that how close this sampler is to being optimally efficient is linked to how smooth the energy function is.
 This helps explain why spiky (and possibly inaccurate) gradients in the protein landscape without graph-based smoothing led to bad results.
 
-### 🔙 Back to GWG
+Literature prior to GWG showed that the following proposal is an optimal locally-informed proposal:
 
-Now that we know have a flavour for why picking dimensions most likely to change (i.e. positions most likely to mutate) makes sampling faster, let's see how GWG uses gradients to inform its proposals.
+$$q(x' | x) \propto e^{(f\_{\theta}(x') - f\_{\theta}(x))/2} \mathbf{1}(x' \in H(x)),$$
+
+where $H(x)$ is the Hamming ball around $x$.
+Unfortunately, even with a Hamming window of size $1$, this would still require $\mathcal{O}(D K)$ evaluations of $f\_{\theta}$ for $D$ dimensions and $K$ categories per iteration.
+GWG manages to cut this down to $\mathcal{O}(1)$ evaluations, while incurring minimal decrease in the sampling efficiency.
 
 ## 🥡 Takeaways
 
