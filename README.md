@@ -1,11 +1,10 @@
-# Improving Protein Optimisation with Smoothed Fitness Landscapes
-
+# Improving Protein Optimisation with Smoothed Fitness Landscapes [Kirjner et al. 2023](https://arxiv.org/abs/2307.00494)
 
 ## 💬 Talk Notes
 
 > [!NOTE]
 >
-> Unfortunately, GitHub's LaTeX parser is slightly limited, and will aggressively interpret subscript indicators as attempts to italicise text, so I will be using superscript more than I would like.
+> Unfortunately, GitHub's LaTeX parser is slightly limited.
 
 ## 🏖️  Destination: Optimising over Fitness Landscapes
 
@@ -80,7 +79,7 @@ They then train a fitness model $f\_{\theta}$ on these smoothed fitness labels $
 ## 🧬 Clustered Sampling
 
 Now that we have a model for estimating fitness, one can in principle pass this to any discrete sampler.
-In the paper, they focus on a particular discrete sampler called "Gibbs with Gradient", whose details we will leave until the next section.
+In the paper, they focus on a particular discrete sampler called "Gibbs-With-Gradients", whose details we will leave until the next section.
 
 Nevertheless, most discrete samplers can be abstracted into a process that, in every round, gets given a set of sequences and produces another set of mutated sequences.
 These mutated sequences then get added so the next round.
@@ -127,25 +126,49 @@ The following approach to protein optimisation was not benchmarked because the f
 
 Their model architecture for $f\_{\theta}$ was a 1D CNN.
 Each method generates a set $\hat{X}$ of 128 sequences.
+All their results are averaged across five random seeds (with standard deviations also quoted).
+For their GWG sampler, they ran their optimiser for $R=15$ rounds.
 
 The main success metric is _fitness_, which is the median fitness amongst the final sequences, as judged by the (imperfect!) evaluator $g\_{\theta}$.
 (They normalise this based on the lowest and highest known fitness in $Y^\*$.)
 In addition, they also quote two other metrics that are not equivalent to better performance, namely _diversity_ and _novelty_.
-Diversity is defined as the median pairwise Levenshtein distance in $\hat{X}$, wherease novelty is the median minimal distance to the starting set $X$. 
+Diversity is defined as the median pairwise Levenshtein distance in $\hat{X}$, wherease novelty is the median minimal distance to the starting set $X$.
+Together, these shed some light on how the optimisers trade exploration for exploitation.
 
-## ↗️ Gibbs with Gradient (GWG) [Grathwohl et al. 2021](https://arxiv.org/abs/2102.04509)
+<!-- Show the results table. -->
+
+The results tables are quite dense with information, so I will only point out two conclusions relating to this paper's optimiser.
+Firstly, without the graph-based smoothing step, the GWG-based optimiser is among the worst performers.
+Secondly, with graph-based smoothing, the GWG-based optimiser is the best performer.
+
+Their appendices test the effects of varying some hyperparameters, namely:
+
+- the smoothing factor $\gamma$, which shouldn't get too large;
+- the number of nodes in the smoothed graph they use to train the fitness model $f\_{\theta}$, where larger graphs seem to help at the expense of more compute;
+- the number of rounds $R$, where more rounds just aid in reaching convergence.
+
+## ↗️ Gibbs-With-Gradients (GWG) [Grathwohl et al. 2021](https://arxiv.org/abs/2102.04509)
 
 Since GWG makes direct use of the gradient, there is reason to expect that smoothing the landscape (and hence gradients) will improve a GWG-based optimiser. 
 Let us now summarise the key features of this sampler.
 
 The fitness model $f\_{\theta}$ can be viewed as an energy based model defining a Boltzmann distribution $\log{p(x)} = f\_{\theta} - \log{Z}$ with normalisation constant $Z$.
-Fit sequences are more likely under this distribution, but there is still diversity amongst functional sequences.
+Fit sequences are more likely under this distribution.
 
 > [!NOTE]
 >
-> Let's pause to highlight the different objectives of the original GWG paper and how it is used here.
+> Let's pause to highlight the different objectives of the original GWG sampler and how it is used here.
 > GWG aims to fairly sample from the distribution $p(x)$ as few costly function evaluations as possible.
 > On the other hand, this paper's "directed evolution" procedure of culling unfit sequences after every round targets only the fittest sequences while trying to maintain diversity by applying an arbitrary clustering heuristic.
+
+The problem with trying to sample from $p(x)$
+
+An excellent visualisation of the process is shown in Figure 1 of _Grathwohl et al._.
+
+<!-- Show Figure 1 -->
+
+The GWG paper contains a theorem stating that how close this sampler is to being optimally efficient is linked to how smooth the energy function is.
+This helps explain why spiky (and possibly inaccurate) gradients in the protein landscape without graph-based smoothing led to bad results.
 
 ### 🧠 Aside: Gibbs Sampling
 
@@ -158,4 +181,4 @@ Fit sequences are more likely under this distribution, but there is still divers
 - Optimising over a **smoothed** fitness landscape can give better results. 
 - There is no principled way to decide on how much smoothing to apply, and it probably varies from dataset to dataset.
 - **Previous** GFP and AAV protein optimsiation **benchmarks** have been **easier** than the harder benchmark in this paper.
-- Their **Gibbs with Gradient** sampler **benefitted** the most from a **smoother** fitness landscape.
+- Their **Gibbs-With-Gradients** sampler **benefitted** the most from a **smoother** fitness landscape.
