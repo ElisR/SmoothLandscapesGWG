@@ -152,7 +152,7 @@ Their appendices test the effects of varying some hyperparameters, namely:
 Since GWG makes direct use of the gradient, there is reason to expect that smoothing the landscape (and hence gradients) will improve a GWG-based optimiser. 
 Let us now summarise the key features of this sampler.
 
-The fitness model $f\_{\theta}$ can be viewed as an energy based model defining a Boltzmann distribution $\log{p(x)} = f\_{\theta} - \log{Z}$ with normalisation constant $Z$.
+The fitness model $f\_{\theta}$ can be viewed as an energy based model defining a Boltzmann distribution $\log{p(x)} = f\_{\theta}(x) - \log{Z}$ with normalisation constant $Z$.
 Fit sequences are more likely under this distribution.
 
 > [!NOTE]
@@ -161,7 +161,18 @@ Fit sequences are more likely under this distribution.
 > GWG aims to fairly sample from the distribution $p(x)$ as few costly function evaluations as possible.
 > On the other hand, this paper's "directed evolution" procedure of culling unfit sequences after every round targets only the fittest sequences while trying to maintain diversity by applying an arbitrary clustering heuristic.
 
-The problem with trying to sample from $p(x)$
+The problem with trying to sample from $p(x)$ is that we don't have the normalisation constant $Z$, only the relative fitness of sequences: $f\_{\theta}(x') - f\_{\theta}(x')$.
+Metropolis-Hastings sampling (an example of Markov-chain Monte Carlo) is one way of overcoming this hurdle.
+With this kind of sampling, one starts with one sequence, then iteratively forms a chain of sequences through gradual mutation. 
+After enough time passes, the distribution of sequences in the chain follow the distribution $p(x)$, provided one uses a valid rule for when to mutate a sequence in the chain and when to leave it alone.
+
+Recall that the data we are interested in is often high-dimensional, and "Gibbs" part of the sampling means that we're only updating a few dimensions of $x$ at a time, often simply just one dimension e.g. making one point mutation at a time.
+The $i$-th position of the next sequence in the chain is chosen according to $p(x\_i | x\_{-i})$, where $-i$ refers to the set of all other dimensions.
+If there are $K$ possible categories, we can calculate this normalised probability through $K$ evaluations of $f\_{\theta}$.
+One can then iterate through the dimensions in some fixed ordering to ensure all dimensions eventually get changed.
+Notice that a particular dimension does not have to change after an iteration.
+Indeed, in certain problems certain dimensions will very rarely change: for example, consider the outer pixels in MNIST, or conserved regions in the SARS-CoV-2 spike protein.
+Proposing a dimension that does not change is wasted computation, which motivates being craftier with choosing how often to consider changing certain dimensions.
 
 An excellent visualisation of the process is shown in Figure 1 of _Grathwohl et al._.
 
