@@ -183,9 +183,13 @@ Indeed, in certain problems certain dimensions will very rarely change: for exam
 **Proposing a dimension that does not subsequently change is wasted computation.**
 This motivates being judicious in choosing how often to propose changing certain dimensions.
 
-The classic Metropolis-Hastings sampler follows this principle of first proposing a sequence according to $q(x'|x)$, then using the (potentially expensive) energy $f\_{\theta}$ function to accept the proposed update with probability
+The classic Metropolis-Hastings sampler follows this principle of first proposing a sequence $x'$ according to $q(x'|x)$, then using the (potentially expensive) energy $f\_{\theta}$ function to accept the proposal with probability[^2]
 
-$$\mathrm{min}(e^{f\_{\theta}(x') - f\_{\theta}(x)} \frac{q(x|x')}{q(x'|x)}, 1).$$
+[^2]: Why this strange acceptance probability? We're trying to make sure that the sampler satisfies _detailed balance_, meaning every transition is reversible and hence that there exists an equilibrium distribution if run for enough time.
+For this, we need $p(x' | x) p(x) = p(x | x') p(x')$, where above we have split up the transition probability into propoposal and acceptance: $p(x' | x) = q(x' | x) A(x', x)$.
+This requirement sets $A(x', x)$ as written.
+
+$$A(x', x) = \mathrm{min}(e^{f\_{\theta}(x') - f\_{\theta}(x)} \frac{q(x|x')}{q(x'|x)}, 1).$$
 
 When writing the proposal distribution as $q(x'|x) = \sum\_i q(x' | x, i) q(i)$ where $q(i)$ is a distribution over indices $i \in \{ 1, \ldots, D \}$, the Metropolis-Hastings approach can lead to performance improvements when $q(i)$ is biased towards dimensions that are more likely to change.
 Going one step further, if we swapped the unconditional proposal $q(i)$ for an input dependent proposal $q(i | x)$, we could theoretically do even better.
@@ -207,8 +211,12 @@ Literature prior to GWG showed that the following proposal is an optimal locally
 $$q(x' | x) \propto e^{(f\_{\theta}(x') - f\_{\theta}(x))/2} \mathbf{1}(x' \in H(x)),$$
 
 where $H(x)$ is the Hamming ball around $x$.
-Unfortunately, even with a Hamming window of size $1$, this would still require $\mathcal{O}(D K)$ evaluations of $f\_{\theta}$ for $D$ dimensions and $K$ categories per iteration.
+Unfortunately, even with a Hamming window of size $1$, this would still require $\mathcal{O}(D K)$ evaluations of $f\_{\theta}$ for $D$ dimensions and $K$ categories per iteration in order to perform the sotfmax.
 GWG manages to cut this down to $\mathcal{O}(1)$ evaluations, while incurring minimal decrease in the sampling efficiency.
+
+So, how can we perform fewer evaluation of $d(x) \equiv f\_{\theta}(x') - f\_{\theta}(x))$?
+The key insight is that $f\_{\theta}$ is often a continuous, differentiable function, even if it is only meant to be evaluated on certain discrete (e.g. one-hot encoded) inputs.
+That means we can estimate many $f\_{\theta}(x') - f\_{\theta}(x)$ by evaluating a single gradient $\nabla\_x f\_{\theta}(x)$ and picking out the relevant components. 
 
 ## 🥡 Takeaways
 
