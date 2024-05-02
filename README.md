@@ -1,10 +1,8 @@
-# Improving Protein Optimisation with Smoothed Fitness Landscapes [Kirjner et al. 2023](https://arxiv.org/abs/2307.00494)
+# Improving Protein Optimisation with Smoothed Fitness Landscapes 
 
 ## 💬 Talk Notes
 
-> [!NOTE]
->
-> Unfortunately, GitHub's LaTeX parser is slightly limited.
+> These are brief notes for a talk about [Kirjner et al. 2023](https://arxiv.org/abs/2307.00494)'s paper.
 
 ## 🏖️  Destination: Optimising over Fitness Landscapes
 
@@ -228,7 +226,6 @@ In practice, we can get this gradient with automatic differentiation once, and d
 >
 > I'm pretty sure that Eq. 2 of _Kirjner et al._'s paper is technically wrong for the dimensions that do change, whereas GWG's Eq. 4 is correct.
 > I choose a different notation altogether to try and make things clearer.
-
 
 ## 🥡 Takeaways
 
