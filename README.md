@@ -197,12 +197,6 @@ For example, in MNIST, the pixels most likely to change are at the edge of a dig
 
 Now that we know have a flavour for why preferentially proposing dimensions most likely to change (i.e. positions most likely to mutate) makes sampling more efficient, let's see how GWG uses gradients to inform its proposals.
 
-An nice visualisation of the process is shown in Figure 1 of _Grathwohl et al._.
-
-<!-- Show Figure 1 -->
-
-The GWG paper contains a theorem stating that how close this sampler is to being optimally efficient is linked to how smooth the energy function is.
-This helps explain why spiky (and possibly inaccurate) gradients in the protein landscape without graph-based smoothing led to bad results.
 
 Literature prior to GWG showed that the following proposal is an optimal locally-informed proposal:
 
@@ -220,12 +214,19 @@ Letting $\tilde{d}\_{\theta}(x)\_{ij} \approx d\_{\theta}(x)\_{ij}$ approximate 
 
 $$\tilde{d}(x)\_{ij} = [\nabla\_x f\_{\theta}(x)]\_{ij} - \sum\_k x\_{ik} [\nabla\_x f\_{\theta}(x)]\_{ik}.$$
 
+An nice visualisation of the process is shown in Figure 1 of _Grathwohl et al._.
+
+<!-- Show Figure 1 -->
+
 In practice, we can get this gradient with automatic differentiation once, and do $\mathcal{O}(D K)$ cheap operations to get the whole matrix $\tilde{d}(x)$ to construct a valid categorical distribution over proposals.
 
 > [!WARNING]
 >
 > I'm pretty sure that Eq. 2 of _Kirjner et al._'s paper is technically wrong for the dimensions that do change, whereas GWG's Eq. 4 is correct.
 > I choose a different notation altogether to try and make things clearer.
+
+The GWG paper contains a theorem stating that how close this sampler is to being optimally efficient is linked to how smooth the energy function is.
+This helps explain why spiky (and possibly inaccurate) gradients in the protein landscape without graph-based smoothing led to bad results.
 
 ## 🥡 Takeaways
 
