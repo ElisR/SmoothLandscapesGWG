@@ -56,7 +56,7 @@ $$\mathbf{TV}\_{2}(Y) = \frac{1}{2} \sum\_{i \in V} \sum\_{(i, j) \in E} (y\_i -
 
 This is used as a regulariser for defining smoothed fitness labels $\hat{Y}$:
 
-$$\underset{\hat{Y} \in \mathbb{R}^{|V|}}{\mathrm{arg min}} \| Y - \hat{Y} \|^2\_2 + \gamma \mathbf{TV}\_{2}(\hat{Y}).$$
+$$\hat{Y} = \underset{\hat{Y}' \in \mathbb{R}^{|V|}}{\mathrm{arg min}} [ \| Y - \hat{Y}' \|^2\_2 + \gamma \mathbf{TV}\_{2}(\hat{Y}')].$$
 
 (This is a quadratic convex problem which has a closed form solution $\hat{Y} = (1 + \gamma L)^{-1} Y$ in terms of the graph Laplacian.[^1])
 
