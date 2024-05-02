@@ -214,9 +214,20 @@ where $H(x)$ is the Hamming ball around $x$.
 Unfortunately, even with a Hamming window of size $1$, this would still require $\mathcal{O}(D K)$ evaluations of $f\_{\theta}$ for $D$ dimensions and $K$ categories per iteration in order to perform the sotfmax.
 GWG manages to cut this down to $\mathcal{O}(1)$ evaluations, while incurring minimal decrease in the sampling efficiency.
 
-So, how can we perform fewer evaluation of $d(x) \equiv f\_{\theta}(x') - f\_{\theta}(x))$?
+So, how can we perform fewer evaluation of $d\_{\theta}(x) \equiv f\_{\theta}(x') - f\_{\theta}(x))$?
 The key insight is that $f\_{\theta}$ is often a continuous, differentiable function, even if it is only meant to be evaluated on certain discrete (e.g. one-hot encoded) inputs.
-That means we can estimate many $f\_{\theta}(x') - f\_{\theta}(x)$ by evaluating a single gradient $\nabla\_x f\_{\theta}(x)$ and picking out the relevant components. 
+That means we can estimate many $f\_{\theta}(x') - f\_{\theta}(x)$ by evaluating a single gradient $\nabla\_x f\_{\theta}(x)$ and picking out the relevant components.
+
+Letting $\tilde{d}\_{\theta}(x)\_{ij} \approx d\_{\theta}(x)\_{ij}$ approximate the log-likelihood ratio of changing the $i$-th dimension of $x$ from its current value to the value $j$, we have
+
+$$\tilde{d}(x)\_{ij} = [\nabla\_x f\_{\theta}(x)]\_{ij} - \sum\_k x\_{ik} [\nabla\_x f\_{\theta}(x)\_{ik}]$$
+
+> [!WARNING]
+>
+> I'm pretty sure that Eq. 2 of _Kirjner et al._'s paper is technically wrong for the dimensions that do change, whereas GWG's Eq. 4 is correct.
+> I choose a different notation altogether to try and make things clearer.
+
+In practice, we can get this gradient with automatic differentiation once, and perform 
 
 ## 🥡 Takeaways
 
