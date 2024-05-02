@@ -220,14 +220,15 @@ That means we can estimate many $f\_{\theta}(x') - f\_{\theta}(x)$ by evaluating
 
 Letting $\tilde{d}\_{\theta}(x)\_{ij} \approx d\_{\theta}(x)\_{ij}$ approximate the log-likelihood ratio of changing the $i$-th dimension of $x$ from its current value to the value $j$, we have
 
-$$\tilde{d}(x)\_{ij} = [\nabla\_x f\_{\theta}(x)]\_{ij} - \sum\_k x\_{ik} [\nabla\_x f\_{\theta}(x)\_{ik}]$$
+$$\tilde{d}(x)\_{ij} = [\nabla\_x f\_{\theta}(x)]\_{ij} - \sum\_k x\_{ik} [\nabla\_x f\_{\theta}(x)]\_{ik}.$$
+
+In practice, we can get this gradient with automatic differentiation once, and do $\mathcal{O}(D K)$ cheap operations to get the whole matrix $\tilde{d}(x)$ to construct a valid categorical distribution over proposals.
 
 > [!WARNING]
 >
 > I'm pretty sure that Eq. 2 of _Kirjner et al._'s paper is technically wrong for the dimensions that do change, whereas GWG's Eq. 4 is correct.
 > I choose a different notation altogether to try and make things clearer.
 
-In practice, we can get this gradient with automatic differentiation once, and perform 
 
 ## 🥡 Takeaways
 
